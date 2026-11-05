@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthMate AI • Offline First-Aid Emergency</title>
+    <style>
+        :root {
+            --primary: #0a8a6b;
+            --primary-dark: #065f46;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .offline-card {
+            background: #ffffff;
+            max-width: 650px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 32px;
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 20px;
+        }
+        .badge {
+            background: #fef2f2;
+            color: var(--danger);
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+        h1 { font-size: 1.4rem; color: #0f172a; margin-bottom: 4px; }
+        .subtitle { font-size: 0.9rem; color: var(--muted); }
+        .alert-box {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .emergency-action {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .emergency-btn {
+            display: inline-block;
+            background: var(--danger);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+        .emergency-btn:hover { background: #b91c1c; }
+        .bilingual-block {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 600px) {
+            .bilingual-block { grid-template-columns: 1fr; }
+        }
+        .lang-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .lang-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .lang-card ul { padding-left: 18px; margin-top: 8px; }
+        .lang-card li { margin-bottom: 6px; }
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <div class="header">
+            <div class="badge">📡</div>
+            <div>
+                <h1>You Are Currently Offline / நீங்கள் ஆஃப்லைனில் உள்ளீர்கள்</h1>
+                <p class="subtitle">HealthMate AI • Remote Emergency First-Aid Assistance</p>
+            </div>
+        </div>
+
+        <div class="alert-box">
+            <strong>⚠️ Offline Status Notice:</strong><br>
+            Internet connection is currently unavailable. Live AI consultation cannot reach the server, but your cached <strong>Offline First-Aid Guide</strong> and saved daily vitals remain fully accessible in the main application.
+        </div>
+
+        <div class="emergency-action">
+            <h3>🚨 In Case of Life-Threatening Emergency</h3>
+            <p style="font-size: 0.9rem; color: #475569; margin-top: 4px;">
+                Severe bleeding, snakebite, unconsciousness, or acute breathing difficulty:
+            </p>
+            <a href="tel:108" class="emergency-btn">📞 Call 108 (India Emergency Ambulance)</a>
+        </div>
+
+        <div class="bilingual-block">
+            <div class="lang-card">
+                <h3>🇬🇧 Quick Offline Emergency Steps</h3>
+                <ul>
+                    <li><strong>Severe Bleeding:</strong> Firm direct palm pressure with clean cloth for 10-15 mins continuously. Elevate limb.</li>
+                    <li><strong>Burns:</strong> Hold under cool running tap water for 20 mins. Never apply ice or toothpaste.</li>
+                    <li><strong>Snakebite:</strong> Keep victim 100% still. Never cut or suck venom. Rush for Anti-Snake Venom (ASV).</li>
+                    <li><strong>Unconscious:</strong> Check breathing. If breathing, place in recovery position on side. If not, start CPR 30 compressions.</li>
+                </ul>
+            </div>
+
+            <div class="lang-card">
+                <h3>🇮🇳 உடனடி அவசர முதலுதவி படிகள்</h3>
+                <ul>
+                    <li><strong>கடுமையான இரத்தப்போக்கு:</strong> சுத்தமான துணியை வைத்து உள்ளங்கையால் 10-15 நிமிடங்கள் விடாமல் அழுத்திப் பிடிக்கவும்.</li>
+                    <li><strong>தீக்காயம்:</strong> சாதாரண ஓடும் குழாய் நீரில் 20 நிமிடங்கள் தொடர்ந்து வைக்கவும். பற்பசை, ஐஸ் வைக்கக் கூடாது.</li>
+                    <li><strong>பாம்பு கடி:</strong> நோயாளியை முற்றிலும் அசையாமல் வைக்கவும். கத்தியால் கீறவோ வாயால் உறிஞ்சவோ கூடாது. உடனே மருத்துவமனை செல்லவும்.</li>
+                    <li><strong>மயக்கம்:</strong> சுவாசம் உள்ளதா என சோதித்து பக்கவாட்டில் படுக்க வைக்கவும் (Recovery Position). சுவாசம் இல்லையெனில் CPR செய்யவும்.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="window.location.reload()" class="btn btn-secondary">🔄 Retry Connection</button>
+            <a href="index.html" class="btn">📱 Open Cached HealthMate App</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+[
+  {
+    "id": "log_20261104_205224_226532",
+    "patient_id": "default",
+    "date": "2026-11-04",
+    "time": "20:45",
+    "systolic_bp": 122,
+    "diastolic_bp": 82,
+    "blood_glucose": 110,
+    "heart_rate": 74,
+    "spo2": 98,
+    "temperature": 98.6,
+    "pain_level": 1,
+    "symptoms": [
+      "Headache"
+    ],
+    "condition_severity": "Mild",
+    "notes": "Feeling good after resting."
+  },
+  {
+    "id": "log_1793806789411",
+    "patient_id": "default",
+    "date": "2026-11-04",
+    "time": "20:55",
+    "systolic_bp": 111,
+    "diastolic_bp": 111,
+    "blood_glucose": 100,
+    "heart_rate": 40,
+    "spo2": 53,
+    "temperature": 100.0,
+    "pain_level": 10,
+    "symptoms": [
+      "Fever",
+      "Headache",
+      "Stomach Pain",
+      "Body Ache",
+      "Dizziness"
+    ],
+    "condition_severity": "Mild",
+    "notes": ""
+  },
+  {
+    "id": "log_1793807239212",
+    "patient_id": "default",
+    "date": "2026-11-04",
+    "time": "20:55",
+    "systolic_bp": null,
+    "diastolic_bp": null,
+    "blood_glucose": null,
+    "heart_rate": null,
+    "spo2": null,
+    "temperature": null,
+    "pain_level": 0,
+    "symptoms": [],
+    "condition_severity": "Mild",
+    "notes": ""
+  },
+  {
+    "id": "log_20261105_104819_062406",
+    "patient_id": "default",
+    "date": "2026-11-05",
+    "time": "10:30",
+    "systolic_bp": 122,
+    "diastolic_bp": 82,
+    "blood_glucose": 110,
+    "heart_rate": 74,
+    "spo2": 99,
+    "temperature": 98.6,
+    "pain_level": 1,
+    "symptoms": [
+      "Headache"
+    ],
+    "condition_severity": "Mild",
+    "notes": "Test vital measurement"
+  },
+  {
+    "id": "log_20261105_105116_033948",
+    "patient_id": "default",
+    "date": "2026-11-05",
+    "time": "10:30",
+    "systolic_bp": 122,
+    "diastolic_bp": 82,
+    "blood_glucose": 110,
+    "heart_rate": 74,
+    "spo2": 99,
+    "temperature": 98.6,
+    "pain_level": 1,
+    "symptoms": [
+      "Headache"
+    ],
+    "condition_severity": "Mild",
+    "notes": "Test vital measurement"
+  },
+  {
+    "id": "log_20261105_223822_994314",
+    "patient_id": "default",
+    "date": "2026-11-05",
+    "time": "10:30",
+    "systolic_bp": 122,
+    "diastolic_bp": 82,
+    "blood_glucose": 110,
+    "heart_rate": 74,
+    "spo2": 99,
+    "temperature": 98.6,
+    "pain_level": 1,
+    "symptoms": [
+      "Headache"
+    ],
+    "condition_severity": "Mild",
+    "notes": "Test vital measurement"
+  }
+]

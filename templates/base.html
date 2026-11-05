@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="{{ 'ta' if is_tamil else 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthMate AI | Remote Emergency, Offline First-Aid & Doctor Report</title>
+    <!-- PWA Manifest & Mobile Meta -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0a8a6b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HealthMate AI">
+    <link rel="apple-touch-icon" href="/static/images/icon-192.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for interactive vitals charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <div class="brand">
+                <a href="/?tab=chat&lang={{ lang }}" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: inherit;">
+                    <div class="brand-badge">
+                        <span class="cross-icon">✚</span>
+                    </div>
+                    <div class="brand-text">
+                        <h1>HealthMate AI</h1>
+                        <span class="sub-text" id="brand-tagline">{{ i18n.brandTagline }}</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="nav-controls">
+                <!-- Navigation Tabs (5 Comprehensive Views) -->
+                <div class="nav-tabs" role="tablist">
+                    <a href="/?tab=chat&lang={{ lang }}" class="tab-btn {{ 'active' if active_tab == 'chat' else '' }}" id="tab-chat-btn" role="tab" aria-selected="{{ 'true' if active_tab == 'chat' else 'false' }}" style="text-decoration: none;">{{ i18n.tabChat }}</a>
+                    <a href="/?tab=wounds&lang={{ lang }}" class="tab-btn {{ 'active' if active_tab == 'wounds' else '' }}" id="tab-wounds-btn" role="tab" aria-selected="{{ 'true' if active_tab == 'wounds' else 'false' }}" style="text-decoration: none;">{{ i18n.tabWounds }}</a>
+                    <a href="/?tab=meds&lang={{ lang }}" class="tab-btn {{ 'active' if active_tab == 'meds' else '' }}" id="tab-meds-btn" role="tab" aria-selected="{{ 'true' if active_tab == 'meds' else 'false' }}" style="text-decoration: none;">{{ i18n.tabMeds }}</a>
+                    <a href="/?tab=chart&lang={{ lang }}" class="tab-btn {{ 'active' if active_tab == 'chart' else '' }}" id="tab-chart-btn" role="tab" aria-selected="{{ 'true' if active_tab == 'chart' else 'false' }}" style="text-decoration: none;">{{ i18n.tabChart }}</a>
+                    <a href="/?tab=report&lang={{ lang }}" class="tab-btn highlight-tab {{ 'active' if active_tab == 'report' else '' }}" id="tab-report-btn" role="tab" aria-selected="{{ 'true' if active_tab == 'report' else 'false' }}" style="text-decoration: none;">{{ i18n.tabReport }}</a>
+                </div>
+
+                <!-- Language Selector Pill (Server-Side Form) -->
+                <form action="/set-language" method="POST" class="lang-pill" style="margin: 0;">
+                    <input type="hidden" name="redirect_url" value="{{ request.url.path }}?tab={{ active_tab }}">
+                    <span class="globe-icon">🌐</span>
+                    <select name="language" id="language" aria-label="Language selection" onchange="this.form.submit()">
+                        <option value="English" {{ 'selected' if not is_tamil else '' }}>English</option>
+                        <option value="Tamil" {{ 'selected' if is_tamil else '' }}>தமிழ் (Tamil)</option>
+                    </select>
+                </form>
+
+                <!-- Online / Offline Network Status Badge -->
+                <div class="status-badge status-online-badge" id="network-status" title="Internet Connection Status">
+                    <span class="network-dot"></span>
+                    <span id="network-status-text">{{ i18n.networkOnline }}</span>
+                </div>
+
+                <!-- Offline Cache Pack Ready Badge -->
+                <div class="status-badge cache-ready-badge" id="cache-status" title="Offline First-Aid Pack Download Status">
+                    <span class="cache-icon">📦</span>
+                    <span id="cache-status-text">{{ i18n.cacheReady }}</span>
+                </div>
+
+                <!-- Backend AI Status Badge -->
+                <div class="status-badge status-online" id="system-status">
+                    <span class="pulse-dot"></span>
+                    <span id="status-text">{{ i18n.statusReady }}</span>
+                </div>
+
+                <!-- Clear Session Button -->
+                <form action="/clear-session" method="POST" style="margin: 0;" onsubmit="return confirm('{{ 'அரட்டை வரலாற்றை அழிக்க விரும்புகிறீர்களா?' if is_tamil else 'Clear chat session?' }}');">
+                    <button type="submit" id="clear-btn" class="icon-btn" title="{{ i18n.clearBtnTitle }}">
+                        🗑️
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Daily Health Check-in Prompt Banner -->
+        <div id="daily-checkin-banner" class="daily-checkin-banner">
+            <div class="banner-left">
+                <span class="banner-icon">☀️</span>
+                <div>
+                    <strong id="daily-banner-title">{{ i18n.dailyBannerTitle }}</strong>
+                    <p id="daily-banner-desc">{{ i18n.dailyBannerDesc }}</p>
+                </div>
+            </div>
+            <a href="/?tab=chart&lang={{ lang }}" id="quick-checkin-btn" class="banner-action-btn" style="text-decoration: none;">
+                <span>{{ i18n.quickCheckinBtn }}</span>
+            </a>
+        </div>
+
+        <!-- Offline Mode Alert Banner -->
+        <div id="offline-banner" class="offline-banner hidden">
+            <div class="offline-banner-left">
+                <span class="offline-signal-icon">📡</span>
+                <div>
+                    <strong id="offline-banner-title">{{ i18n.offlineBannerTitle }}</strong>
+                    <p id="offline-banner-desc">{{ i18n.offlineBannerDesc }}</p>
+                </div>
+            </div>
+            <a href="/?tab=wounds&lang={{ lang }}" id="offline-guide-quick-btn" class="offline-action-btn" style="text-decoration: none;">
+                <span id="offline-btn-text">{{ i18n.offlineBtnText }}</span>
+            </a>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-container">
+            
+            <!-- Emergency Alert Banner (Dynamic or Session Triggered) -->
+            <div id="emergency-banner" class="emergency-banner {{ '' if is_emergency else 'hidden' }}">
+                <div class="emergency-content">
+                    <span class="siren-icon">🚨</span>
+                    <div class="emergency-info">
+                        <strong id="emergency-title">{{ i18n.emergencyTitle }}</strong>
+                        <p id="emergency-desc">{{ i18n.emergencyDesc }}</p>
+                    </div>
+                </div>
+                <a href="tel:108" class="emergency-call-btn" id="emergency-call-btn">{{ i18n.emergencyBtn }}</a>
+            </div>
+
+            {% block content %}{% endblock %}
+
+            <!-- Safety Disclaimer Footer Card -->
+            <footer class="medical-disclaimer-card">
+                <div class="disclaimer-title">
+                    <span>⚠️</span>
+                    <strong id="disclaimer-header">{{ i18n.disclaimerHeader }}</strong>
+                </div>
+                <p id="disclaimer-body">
+                    {{ i18n.disclaimerBody }}
+                </p>
+                <div class="hackathon-footer">
+                    <span id="hackathon-footer-text">{{ i18n.hackathonFooter }}</span>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- Client-Side Script strictly for Browser APIs (Speech, Canvas Charts, SW) -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

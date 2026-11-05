@@ -1,0 +1,57 @@
+﻿<!-- templates/partials/medicine_kit_view.html -->
+<div id="view-meds" class="view-panel {{ 'active' if active_tab == 'meds' else '' }}">
+    <section class="meds-section">
+        <div class="section-hero-card">
+            <div class="section-hero-icon">🛒</div>
+            <div>
+                <h2 id="meds-title">{{ i18n.medsTitle }}</h2>
+                <p id="meds-desc">{{ i18n.medsDesc }}</p>
+            </div>
+        </div>
+
+        <!-- Toolbar: Category Filter & Copy/Print actions -->
+        <div class="meds-toolbar">
+            <div class="meds-filters" id="meds-filters">
+                {% for cat_id, cat_name in i18n.medFilters.items() %}
+                <a href="/?tab=meds&category={{ cat_id }}&lang={{ lang }}" class="med-filter-btn {{ 'active' if active_category == cat_id else '' }}" style="text-decoration: none;">
+                    {{ cat_name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <div class="meds-actions">
+                <button type="button" id="copy-meds-btn" class="secondary-btn" onclick="copyMedicineList()">{{ i18n.copyMedsBtn }}</button>
+                <button type="button" id="print-meds-btn" class="secondary-btn" onclick="window.print()">{{ i18n.printMedsBtn }}</button>
+            </div>
+        </div>
+
+        <!-- Medicine Cards Grid (Rendered via Python & Jinja2) -->
+        <div class="meds-grid" id="meds-grid">
+            {% for med in medicines %}
+            <div class="med-card">
+                <div class="med-card-header">
+                    <span class="med-icon">{{ med.icon }}</span>
+                    <div>
+                        <h4 class="med-name">{{ med.name }}</h4>
+                        <span class="med-category-tag">{{ med.type }}</span>
+                    </div>
+                </div>
+
+                <div class="med-details">
+                    <div class="med-row">
+                        <strong>{{ 'பயன்பாடு:' if is_tamil else 'Usage / Method:' }}</strong>
+                        <span>{{ med.dose }}</span>
+                    </div>
+                    <div class="med-row">
+                        <strong>{{ 'அளவு வரம்பு:' if is_tamil else 'Limit / Rule:' }}</strong>
+                        <span>{{ med.limit }}</span>
+                    </div>
+                    <div class="med-caution-box">
+                        <span>⚠️ {{ med.caution }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>

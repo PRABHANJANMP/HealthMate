@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthMate AI | Remote Emergency, Offline First-Aid & Doctor Report</title>
+    <!-- PWA Manifest & Mobile Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a8a6b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HealthMate AI">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for interactive vitals charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-badge">
+                    <span class="cross-icon">✚</span>
+                </div>
+                <div class="brand-text">
+                    <h1>HealthMate AI</h1>
+                    <span class="sub-text" id="brand-tagline">Remote Emergency & Bilingual Health Assistant • தமிழ் / English</span>
+                </div>
+            </div>
+
+            <div class="nav-controls">
+                <!-- Navigation Tabs (5 Comprehensive Views) -->
+                <div class="nav-tabs" role="tablist">
+                    <button type="button" class="tab-btn active" id="tab-chat-btn" role="tab" aria-selected="true">💬 Chat</button>
+                    <button type="button" class="tab-btn" id="tab-wounds-btn" role="tab" aria-selected="false">🩹 Offline First-Aid</button>
+                    <button type="button" class="tab-btn" id="tab-meds-btn" role="tab" aria-selected="false">🛒 Medicine Kit</button>
+                    <button type="button" class="tab-btn" id="tab-chart-btn" role="tab" aria-selected="false">📊 Daily Log & Chart</button>
+                    <button type="button" class="tab-btn highlight-tab" id="tab-report-btn" role="tab" aria-selected="false">📄 Doctor Report</button>
+                </div>
+
+                <!-- Language Selector Pill -->
+                <div class="lang-pill">
+                    <span class="globe-icon">🌐</span>
+                    <select id="language" aria-label="Language selection">
+                        <option value="English">English</option>
+                        <option value="Tamil">தமிழ் (Tamil)</option>
+                    </select>
+                </div>
+
+                <!-- Online / Offline Network Status Badge -->
+                <div class="status-badge status-online-badge" id="network-status" title="Internet Connection Status">
+                    <span class="network-dot"></span>
+                    <span id="network-status-text">Online</span>
+                </div>
+
+                <!-- Offline Cache Pack Ready Badge -->
+                <div class="status-badge cache-ready-badge" id="cache-status" title="Offline First-Aid Pack Download Status">
+                    <span class="cache-icon">📦</span>
+                    <span id="cache-status-text">Offline Pack: Ready</span>
+                </div>
+
+                <!-- Backend AI Status Badge -->
+                <div class="status-badge" id="system-status">
+                    <span class="pulse-dot"></span>
+                    <span id="status-text">Connecting...</span>
+                </div>
+
+                <!-- Clear Session Button -->
+                <button type="button" id="clear-btn" class="icon-btn" title="Clear Chat History">
+                    🗑️
+                </button>
+            </div>
+        </header>
+
+        <!-- Daily Health Check-in Prompt Banner -->
+        <div id="daily-checkin-banner" class="daily-checkin-banner">
+            <div class="banner-left">
+                <span class="banner-icon">☀️</span>
+                <div>
+                    <strong id="daily-banner-title">Daily Health Check-in: How are you feeling today?</strong>
+                    <p id="daily-banner-desc">Living far from a hospital? Regularly record your blood pressure, sugar, and symptoms to build your monthly doctor report.</p>
+                </div>
+            </div>
+            <button type="button" id="quick-checkin-btn" class="banner-action-btn">
+                <span>➕ Log Today's Vitals</span>
+            </button>
+        </div>
+
+        <!-- Offline Mode Alert Banner (Shown dynamically when disconnected) -->
+        <div id="offline-banner" class="offline-banner hidden">
+            <div class="offline-banner-left">
+                <span class="offline-signal-icon">📡</span>
+                <div>
+                    <strong id="offline-banner-title">Offline Mode Active • இணைய இணைப்பு இல்லை</strong>
+                    <p id="offline-banner-desc">You are currently offline. Live AI consultation is unavailable without internet, but your cached Offline First-Aid Guide and saved vitals records are 100% available locally.</p>
+                </div>
+            </div>
+            <button type="button" id="offline-guide-quick-btn" class="offline-action-btn">
+                <span id="offline-btn-text">🩹 Open Offline First-Aid</span>
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-container">
+            
+            <!-- Emergency Alert Banner (Dynamic) -->
+            <div id="emergency-banner" class="emergency-banner hidden">
+                <div class="emergency-content">
+                    <span class="siren-icon">🚨</span>
+                    <div class="emergency-info">
+                        <strong id="emergency-title">Medical Emergency Notice</strong>
+                        <p id="emergency-desc">
+                            If you or someone else is experiencing severe chest pain, breathing difficulty, heavy blood loss, or unconsciousness, 
+                            call <strong>108 (India)</strong> or rush to the nearest Primary Health Center (PHC) immediately.
+                        </p>
+                    </div>
+                </div>
+                <a href="tel:108" class="emergency-call-btn" id="emergency-call-btn">Call 108 📞</a>
+            </div>
+
+            <!-- =============================================================
+                 VIEW 1: CHAT VIEW (DEFAULT)
+                 ============================================================= -->
+            <div id="view-chat" class="view-panel active">
+                <section class="hero-card">
+                    <div class="hero-header">
+                        <div class="hero-chip" id="hackathon-tag">Remote Care Healthcare AI • Strands SDK & Gemini</div>
+                        <h2 id="hero-title">Your Health, Guided in Your Language.</h2>
+                        <p id="hero-subtitle">
+                            Triage symptoms, understand emergency wound care, get verified OTC home remedies, and track vitals when hospitals are hours away.
+                        </p>
+                    </div>
+
+                    <!-- Suggestion Chips -->
+                    <div class="suggestions-wrapper">
+                        <span class="suggestion-label" id="suggest-label">💡 Suggested Questions:</span>
+                        <div class="chips-container" id="chips-container">
+                            <!-- Loaded dynamically via script.js -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Chat Window -->
+                <section class="chat-wrapper">
+                    <div class="chat-header">
+                        <div class="chat-meta">
+                            <span class="meta-title" id="chat-title">Health Consultation Session</span>
+                            <span class="meta-note" id="chat-subtitle">Informational AI guidance • Not a clinical diagnosis</span>
+                        </div>
+                        <button class="voice-toggle-btn" id="voice-btn" title="Click to speak (Tamil or English)">
+                            <span class="mic-icon">🎙️</span>
+                            <span class="voice-label" id="voice-label">Voice Input</span>
+                        </button>
+                    </div>
+
+                    <!-- Messages Scroll Area -->
+                    <div class="chat-history" id="chat-messages" role="log" aria-live="polite">
+                        <!-- Initial Welcome Bot Message -->
+                        <div class="message-row bot-row">
+                            <div class="avatar bot-avatar">✚</div>
+                            <div class="bubble bot-bubble">
+                                <div class="bubble-content" id="welcome-message">
+                                    <strong>Hello! I am HealthMate AI. 👋</strong><br><br>
+                                    I am your remote healthcare guide. I can help with <strong>emergency wound treatment</strong>, recommended <strong>essential home medicines</strong>, daily <strong>vitals tracking</strong>, and preparing a <strong>monthly report for your doctor</strong> in <strong>English</strong> or <strong>Tamil</strong>.<br><br>
+                                    <em>How can I assist your health or family today?</em>
+                                </div>
+                                <div class="bubble-footer">
+                                    <span class="time-stamp">HealthMate AI</span>
+                                    <span class="verified-tag">✓ Medical Safety Guardrails Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Field Form -->
+                    <form id="chat-form" class="chat-input-bar">
+                        <div class="input-container">
+                            <textarea 
+                                id="user-input" 
+                                rows="1" 
+                                placeholder="Describe symptoms, wounds, or ask health questions in English or தமிழ்..." 
+                                required
+                                aria-label="Health question"
+                            ></textarea>
+                        </div>
+
+                        <button type="submit" id="send-button" class="send-btn" title="Send message">
+                            <span>Send</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </form>
+
+                    <div class="input-caveat">
+                        <span id="privacy-note">🔒 Private & secure: Confidential consultation notes for remote communities.</span>
+                    </div>
+                </section>
+            </div>
+
+            <!-- =============================================================
+                 VIEW 2: OFFLINE FIRST-AID GUIDE & EMERGENCY CARE
+                 ============================================================= -->
+            <div id="view-wounds" class="view-panel">
+                <section class="tutorial-section">
+                    <div class="section-hero-card">
+                        <div class="section-hero-icon">🩹</div>
+                        <div>
+                            <h2 id="wounds-title">Complete Offline Emergency First-Aid Guide</h2>
+                            <p id="wounds-desc">Clinically verified, step-by-step first-aid protocols for remote areas, villages, and emergencies when hospital or ambulance is hours away. Fully functional offline.</p>
+                        </div>
+                    </div>
+
+                    <!-- Offline Guide Local Storage Status -->
+                    <div class="offline-guide-indicator" id="offline-guide-status-box">
+                        <span class="check-icon">✓</span>
+                        <span id="offline-guide-status-text">Offline First-Aid Pack: 100% Downloaded & Saved in Browser Cache Storage</span>
+                    </div>
+
+                    <!-- Visible Emergency Section: When to Seek Immediate Professional Help -->
+                    <div class="emergency-triage-card" id="emergency-triage-card">
+                        <div class="triage-header">
+                            <span class="triage-icon">🚨</span>
+                            <div>
+                                <strong id="triage-title">CRITICAL EMERGENCY NOTICE: When to Seek Immediate Hospital / 108 Care</strong>
+                                <p id="triage-subtitle">First-aid guidance stabilizes the victim and prevents death while transport is arranged. It NEVER replaces professional hospital emergency care, surgery, or antivenom administration.</p>
+                            </div>
+                        </div>
+                        <div class="triage-grid">
+                            <div class="triage-col danger-col">
+                                <strong id="triage-rush-title">🚑 Call 108 / Rush to Nearest Hospital Immediately If:</strong>
+                                <ul id="triage-rush-list">
+                                    <li>Pumping arterial or heavy bleeding that does not stop with direct palm pressure</li>
+                                    <li>Victim is unresponsive, unconscious, or stopped breathing (start CPR immediately)</li>
+                                    <li>Any venomous snakebite (Anti-Snake Venom required in hospital within 1-2 hours)</li>
+                                    <li>Severe burns larger than a palm, electrical burns, or burns on face, neck, or groin</li>
+                                    <li>Suspected broken neck, spine, or thigh bone (femur) — keep victim completely still</li>
+                                    <li>Dog or wild animal bite (requires Anti-Rabies Vaccine & Immunoglobulin within 24 hours)</li>
+                                </ul>
+                            </div>
+                            <div class="triage-col safe-col">
+                                <strong id="triage-role-title">🛡️ How to Use This Offline Guide:</strong>
+                                <p id="triage-role-desc">
+                                    When you are in a remote village, highway, or facing power/network failure:
+                                    Select the injury type below. Follow the 4-step clinical protocol, heed the <strong>DANGER DON'TS</strong>, 
+                                    and safely transport the patient to the nearest Primary Health Center (PHC).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wound & Emergency Category Selector Chips -->
+                    <div class="wound-selector-container">
+                        <span class="selector-label" id="wounds-select-label">Select First-Aid / Emergency Condition:</span>
+                        <div class="wound-chips" id="wound-chips">
+                            <button type="button" class="wound-chip active" data-wound="severe-bleeding">🚨 Severe Bleeding & Tourniquet</button>
+                            <button type="button" class="wound-chip" data-wound="minor-cuts">🩹 Minor Cuts & Bleeding</button>
+                            <button type="button" class="wound-chip" data-wound="burns">🔥 Burns (1st to 3rd Degree)</button>
+                            <button type="button" class="wound-chip" data-wound="fractures">🦴 Broken Bones & Splints</button>
+                            <button type="button" class="wound-chip" data-wound="snakebites">🐍 Snakebites (Anti-Venom Protocol)</button>
+                            <button type="button" class="wound-chip" data-wound="animal-bites">🐕 Dog & Animal Bites (Rabies)</button>
+                            <button type="button" class="wound-chip" data-wound="unconsciousness">🫀 Unconsciousness & CPR (DRSABCD)</button>
+                            <button type="button" class="wound-chip" data-wound="puncture-wounds">🔩 Puncture & Rusty Nails (Tetanus)</button>
+                            <button type="button" class="wound-chip" data-wound="sepsis">⚠️ Sepsis & Infection Signs</button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Dynamic Wound Guide Display -->
+                    <div class="wound-guide-card" id="wound-guide-card">
+                        <!-- Loaded dynamically via script.js -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- =============================================================
+                 VIEW 3: ESSENTIAL MEDICINE & FIRST AID KIT CHECKLIST
+                 ============================================================= -->
+            <div id="view-meds" class="view-panel">
+                <section class="meds-section">
+                    <div class="section-hero-card">
+                        <div class="section-hero-icon">🛒</div>
+                        <div>
+                            <h2 id="meds-title">Essential Home Medicine & First-Aid Kit Checklist</h2>
+                            <p id="meds-desc">Verified list of vital OTC medicines and diagnostic devices to buy and stock at home in areas with limited pharmacies or medical centers.</p>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar: Category Filter & Copy/Print actions -->
+                    <div class="meds-toolbar">
+                        <div class="meds-filters" id="meds-filters">
+                            <button type="button" class="med-filter-btn active" data-category="all">All Supplies</button>
+                            <button type="button" class="med-filter-btn" data-category="wound">🩹 Wound & Antiseptics</button>
+                            <button type="button" class="med-filter-btn" data-category="fever">🌡️ Fever & Pain</button>
+                            <button type="button" class="med-filter-btn" data-category="stomach">🤢 Stomach & ORS</button>
+                            <button type="button" class="med-filter-btn" data-category="allergy">🐝 Allergies & Burns</button>
+                            <button type="button" class="med-filter-btn" data-category="tools">🩺 Vital Devices</button>
+                        </div>
+
+                        <div class="meds-actions">
+                            <button type="button" id="copy-meds-btn" class="secondary-btn">📋 Copy Shopping List</button>
+                            <button type="button" id="print-meds-btn" class="secondary-btn">🖨️ Print List</button>
+                        </div>
+                    </div>
+
+                    <!-- Medicine Cards Grid -->
+                    <div class="meds-grid" id="meds-grid">
+                        <!-- Loaded dynamically via script.js -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- =============================================================
+                 VIEW 4: DAILY HEALTH CHECK-IN & VITALS CHARTS
+                 ============================================================= -->
+            <div id="view-chart" class="view-panel">
+                <section class="chart-section">
+                    <div class="section-hero-card">
+                        <div class="section-hero-icon">📈</div>
+                        <div>
+                            <h2 id="chart-section-title">Daily Health Check-in & Vitals Tracker</h2>
+                            <p id="chart-section-desc">Record your daily health metrics (BP, blood sugar, SpO2, temperature, symptoms). Visual trend graphs help you and your visiting doctor detect problems early.</p>
+                        </div>
+                    </div>
+
+                    <!-- Daily Health Check-in Form Card -->
+                    <div class="log-form-card">
+                        <div class="form-header-row">
+                            <h3 id="log-form-title">☀️ Daily Health Check-in Entry</h3>
+                            <span class="form-badge">Tracks Daily Health</span>
+                        </div>
+
+                        <form id="health-log-form" class="log-form-grid">
+                            <!-- Date & Time -->
+                            <div class="form-group">
+                                <label for="log-date" id="lbl-date">Date:</label>
+                                <input type="date" id="log-date" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="log-time" id="lbl-time">Time of Measurement:</label>
+                                <input type="time" id="log-time" required>
+                            </div>
+
+                            <!-- Blood Pressure -->
+                            <div class="form-group">
+                                <label for="log-sys-bp" id="lbl-sys-bp">Systolic BP (High / mmHg):</label>
+                                <input type="number" id="log-sys-bp" placeholder="e.g. 120" min="60" max="250">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="log-dia-bp" id="lbl-dia-bp">Diastolic BP (Low / mmHg):</label>
+                                <input type="number" id="log-dia-bp" placeholder="e.g. 80" min="40" max="150">
+                            </div>
+
+                            <!-- Blood Sugar & Pulse -->
+                            <div class="form-group">
+                                <label for="log-sugar" id="lbl-sugar">Blood Sugar (mg/dL):</label>
+                                <input type="number" id="log-sugar" placeholder="e.g. 95 (Fasting) or 130" min="40" max="600">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="log-pulse" id="lbl-pulse">Heart Rate / Pulse (BPM):</label>
+                                <input type="number" id="log-pulse" placeholder="e.g. 72" min="40" max="220">
+                            </div>
+
+                            <!-- SpO2 & Temperature -->
+                            <div class="form-group">
+                                <label for="log-spo2" id="lbl-spo2">Oxygen SpO2 (%):</label>
+                                <input type="number" id="log-spo2" placeholder="e.g. 98" min="50" max="100">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="log-temp" id="lbl-temp">Temperature (°F):</label>
+                                <input type="number" step="0.1" id="log-temp" placeholder="e.g. 98.6" min="90" max="108">
+                            </div>
+
+                            <!-- Pain Scale Slider -->
+                            <div class="form-group full-width pain-slider-group">
+                                <div class="slider-header">
+                                    <label for="log-pain" id="lbl-pain">Pain Severity (0 = None, 10 = Severe):</label>
+                                    <span id="pain-val-badge" class="pain-badge">0 - No Pain 😊</span>
+                                </div>
+                                <input type="range" id="log-pain" min="0" max="10" value="0" class="pain-slider">
+                            </div>
+
+                            <!-- Symptoms Multi-Select -->
+                            <div class="form-group full-width">
+                                <label id="lbl-symptoms-select">Select Any Symptoms Experienced Today:</label>
+                                <div class="symptom-tag-chips" id="symptom-tag-chips">
+                                    <span class="symptom-tag" data-val="Fever">🌡️ Fever (காய்ச்சல்)</span>
+                                    <span class="symptom-tag" data-val="Headache">🤕 Headache (தலைவலி)</span>
+                                    <span class="symptom-tag" data-val="Cough">🤧 Cough/Cold (சளி/இருமல்)</span>
+                                    <span class="symptom-tag" data-val="Vomiting">🤮 Vomiting (வாந்தி)</span>
+                                    <span class="symptom-tag" data-val="Stomach Pain">🤢 Stomach Ache (வயிற்று வலி)</span>
+                                    <span class="symptom-tag" data-val="Chest Discomfort">💔 Chest Tightness (நெஞ்சு அழுத்தம்)</span>
+                                    <span class="symptom-tag" data-val="Diarrhea">💧 Diarrhea (பேதி)</span>
+                                    <span class="symptom-tag" data-val="Body Ache">😫 Body Pain (உடல் வலி)</span>
+                                    <span class="symptom-tag" data-val="Dizziness">😵 Dizziness (தலைசுற்றல்)</span>
+                                </div>
+                            </div>
+
+                            <!-- Overall Condition Severity -->
+                            <div class="form-group">
+                                <label for="log-severity" id="lbl-severity">Overall Feeling Today:</label>
+                                <select id="log-severity" required>
+                                    <option value="Mild">🟢 Mild / Feeling Good (லேசானது / நலம்)</option>
+                                    <option value="Moderate">🟡 Moderate / Need Rest (மிதமானது / ஓய்வு தேவை)</option>
+                                    <option value="Severe">🔴 Severe / Feeling Unwell (தீவிரமானது / உடல்நிலை மோசம்)</option>
+                                </select>
+                            </div>
+
+                            <!-- Additional Notes -->
+                            <div class="form-group">
+                                <label for="log-notes" id="lbl-notes">Notes / Food / Meds Taken:</label>
+                                <input type="text" id="log-notes" placeholder="e.g. Took Paracetamol, rested well, drank ORS...">
+                            </div>
+
+                            <div class="form-actions full-width">
+                                <button type="submit" class="primary-btn" id="save-log-btn">💾 Save Daily Health Check-in</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Interactive Vitals Trend Charts -->
+                    <div class="charts-card">
+                        <div class="chart-tab-header">
+                            <h3 id="charts-title">📈 Monthly Vitals Progression Charts</h3>
+                            <div class="chart-switches">
+                                <button type="button" class="chart-switch-btn active" data-chart="bp">Blood Pressure</button>
+                                <button type="button" class="chart-switch-btn" data-chart="sugar-temp">Sugar & Temp</button>
+                                <button type="button" class="chart-switch-btn" data-chart="pulse-spo2">Pulse & SpO2</button>
+                            </div>
+                        </div>
+
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="vitalsChart" height="260"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Health Timeline Visual Display -->
+                    <div class="timeline-container">
+                        <div class="timeline-header">
+                            <h3 id="timeline-title">📋 Daily Check-in History</h3>
+                            <button type="button" id="analyze-chart-btn" class="ai-analyze-btn">
+                                🤖 AI Review My Vitals Log
+                            </button>
+                        </div>
+                        <div id="timeline-cards-list" class="timeline-cards-list">
+                            <!-- Cards inserted dynamically by script.js -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- =============================================================
+                 VIEW 5: MONTHLY DOCTOR REPORT & TELE-SHARE
+                 ============================================================= -->
+            <div id="view-report" class="view-panel">
+                <section class="report-section">
+                    <div class="section-hero-card">
+                        <div class="section-hero-icon">📄</div>
+                        <div>
+                            <h2 id="report-title">Monthly Clinical Health Summary for Doctor</h2>
+                            <p id="report-desc">Generate a professional, structured clinical report from your daily health check-ins. Send it to your real doctor via Email, WhatsApp, or Print/Save as PDF.</p>
+                        </div>
+                    </div>
+
+                    <!-- Patient Info & Generation Bar -->
+                    <div class="report-controls-card">
+                        <div class="patient-inputs-grid">
+                            <div class="form-group">
+                                <label for="patient-name-input" id="lbl-pat-name">Patient Name:</label>
+                                <input type="text" id="patient-name-input" placeholder="e.g. Ramesh Kumar / செல்வி">
+                            </div>
+                            <div class="form-group">
+                                <label for="patient-age-input" id="lbl-pat-age">Age & Gender:</label>
+                                <input type="text" id="patient-age-input" placeholder="e.g. 48 Y / Male">
+                            </div>
+                            <div class="form-group">
+                                <label for="doctor-email-input" id="lbl-doc-email">Doctor's Email (for Sending):</label>
+                                <input type="email" id="doctor-email-input" placeholder="doctor@clinic.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="doctor-phone-input" id="lbl-doc-phone">Doctor's WhatsApp / Mobile:</label>
+                                <input type="tel" id="doctor-phone-input" placeholder="e.g. 919876543210">
+                            </div>
+                        </div>
+
+                        <div class="report-gen-actions">
+                            <button type="button" id="generate-report-btn" class="primary-btn pulse-glow">
+                                ✨ Generate Monthly Doctor Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Document Sheet (Hospital Grade) -->
+                    <div class="report-document" id="report-document">
+                        <div class="report-placeholder" id="report-placeholder">
+                            <span class="report-empty-icon">📊</span>
+                            <p id="report-empty-text">Click "Generate Monthly Doctor Report" above to compile your recorded daily logs into a hospital-grade physician handover summary.</p>
+                        </div>
+
+                        <!-- Rendered Report Content (Hidden until generated) -->
+                        <div id="report-content" class="report-content hidden">
+                            <!-- Header with Clinic Seal -->
+                            <div class="doc-header">
+                                <div class="doc-header-brand">
+                                    <span class="doc-cross">✚</span>
+                                    <div>
+                                        <h2 id="doc-title">HealthMate AI • Monthly Tele-Health Vitals Summary</h2>
+                                        <p id="doc-subtitle">Primary Health Center (PHC) & Remote Community Clinical Handover Sheet</p>
+                                    </div>
+                                </div>
+                                <div class="doc-meta-right">
+                                    <div class="doc-badge" id="doc-badge">CONFIDENTIAL MEDICAL REPORT</div>
+                                    <div id="doc-generated-date" class="doc-date">Generated: 2026-11-04</div>
+                                </div>
+                            </div>
+
+                            <hr class="doc-divider">
+
+                            <!-- Patient Details Row -->
+                            <div class="doc-patient-meta">
+                                <div><strong id="doc-lbl-name">Patient Name:</strong> <span id="doc-patient-name">Ramesh Kumar</span></div>
+                                <div><strong id="doc-lbl-demo">Demographics:</strong> <span id="doc-patient-demographics">48 Y / Male</span></div>
+                                <div><strong id="doc-lbl-loc">Location Context:</strong> <span id="doc-location-val">Remote / Hospital &gt; 30 km</span></div>
+                                <div><strong id="doc-lbl-win">Monitoring Window:</strong> <span id="doc-window-val">Past 30 Days (Daily Logs)</span></div>
+                            </div>
+
+                            <!-- Executive Vitals Statistics Table -->
+                            <div class="doc-section">
+                                <h4 class="doc-section-title" id="doc-sec1-title">1. Vitals Overview & Monthly Statistics</h4>
+                                <div class="doc-stats-grid" id="doc-stats-grid">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Red Flag Alerts Box -->
+                            <div class="doc-section" id="doc-red-flags-section">
+                                <h4 class="doc-section-title" id="doc-sec2-title">2. Clinical Red Flags & Threshold Deviations</h4>
+                                <div class="doc-alerts-box" id="doc-alerts-box">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Symptoms Timeline Breakdown -->
+                            <div class="doc-section">
+                                <h4 class="doc-section-title" id="doc-sec3-title">3. Symptom Frequency Distribution</h4>
+                                <div class="doc-symptoms-list" id="doc-symptoms-list">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- AI Clinical Summary & Attending Physician Memo -->
+                            <div class="doc-section">
+                                <h4 class="doc-section-title" id="doc-sec4-title">4. Physician Handover Memo & Clinical Observations</h4>
+                                <div class="doc-ai-summary" id="doc-ai-summary">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Real Doctor Signature & Prescription Box -->
+                            <div class="doc-section doc-prescription-box">
+                                <h4 class="doc-section-title" id="doc-sec5-title">5. Attending Doctor's Prescription & Clinical Notes (For Doctor Use)</h4>
+                                <div class="doc-blank-prescription">
+                                    <div class="doc-rx-line" id="doc-rx-line"><strong>Rx / Medications Prescribed:</strong> ___________________________________________________________</div>
+                                    <div class="doc-rx-line" id="doc-lab-line"><strong>Clinical Investigation Advised:</strong> [ ] Blood Routine [ ] HbA1c [ ] ECG [ ] Chest X-Ray [ ] Other: ______</div>
+                                    <div class="doc-sign-row">
+                                        <div id="doc-date-line"><strong>Date:</strong> _______________</div>
+                                        <div id="doc-sign-line"><strong>Doctor's Signature & Reg. No:</strong> ___________________________</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="doc-disclaimer" id="doc-disclaimer">
+                                ⚠️ <strong>Clinical Notice:</strong> This summary was aggregated from patient-recorded daily home vitals via HealthMate AI. It is intended to assist medical practitioners during clinical reviews or tele-consultations.
+                            </div>
+
+                            <!-- Sharing Actions Toolbar -->
+                            <div class="doc-sharing-toolbar">
+                                <a id="email-doctor-btn" href="#" class="share-btn email-share">
+                                    <span>✉️ Email to Doctor</span>
+                                </a>
+                                <a id="whatsapp-doctor-btn" href="#" target="_blank" rel="noopener" class="share-btn whatsapp-share">
+                                    <span>💬 Send via WhatsApp</span>
+                                </a>
+                                <button type="button" id="print-report-btn" class="share-btn print-share">
+                                    <span>🖨️ Print / Save as PDF</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Safety Disclaimer Footer Card -->
+            <footer class="medical-disclaimer-card">
+                <div class="disclaimer-title">
+                    <span>⚠️</span>
+                    <strong id="disclaimer-header">Important Medical Disclaimer</strong>
+                </div>
+                <p id="disclaimer-body">
+                    HealthMate AI is an informational and remote emergency assistance tool built for communities with distant medical facilities. It is not a qualified doctor, cannot deliver confirmed clinical diagnoses, and does not prescribe prescription-only medicines. Always consult an authorized medical practitioner. In acute emergencies, call 108 or proceed immediately to the nearest hospital.
+                </p>
+                <div class="hackathon-footer">
+                    <span id="hackathon-footer-text">AWS User Group Madurai Strands SDK Hackathon • Remote Healthcare Track • © 2026</span>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

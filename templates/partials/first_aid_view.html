@@ -1,0 +1,105 @@
+﻿<!-- templates/partials/first_aid_view.html -->
+<div id="view-wounds" class="view-panel {{ 'active' if active_tab == 'wounds' else '' }}">
+    <section class="tutorial-section">
+        <div class="section-hero-card">
+            <div class="section-hero-icon">🩹</div>
+            <div>
+                <h2 id="wounds-title">{{ i18n.woundsTitle }}</h2>
+                <p id="wounds-desc">{{ i18n.woundsDesc }}</p>
+            </div>
+        </div>
+
+        <!-- Offline Guide Local Storage Status -->
+        <div class="offline-guide-indicator" id="offline-guide-status-box">
+            <span class="check-icon">✓</span>
+            <span id="offline-guide-status-text">{{ i18n.offlineGuideStatus }}</span>
+        </div>
+
+        <!-- Visible Emergency Section: When to Seek Immediate Professional Help -->
+        <div class="emergency-triage-card" id="emergency-triage-card">
+            <div class="triage-header">
+                <span class="triage-icon">🚨</span>
+                <div>
+                    <strong id="triage-title">{{ i18n.triageTitle }}</strong>
+                    <p id="triage-subtitle">{{ i18n.triageSubtitle }}</p>
+                </div>
+            </div>
+            <div class="triage-grid">
+                <div class="triage-col danger-col">
+                    <strong id="triage-rush-title">{{ i18n.triageRushTitle }}</strong>
+                    <ul id="triage-rush-list">
+                        {% for item in i18n.triageRushList %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="triage-col safe-col">
+                    <strong id="triage-role-title">{{ i18n.triageRoleTitle }}</strong>
+                    <p id="triage-role-desc">
+                        {{ i18n.triageRoleDesc }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wound & Emergency Category Selector Chips -->
+        <div class="wound-selector-container">
+            <span class="selector-label" id="wounds-select-label">{{ i18n.woundsSelectLabel }}</span>
+            <div class="wound-chips" id="wound-chips">
+                {% for k in all_wound_keys %}
+                <a href="/?tab=wounds&wound={{ k }}&lang={{ lang }}" class="wound-chip {{ 'active' if active_wound_key == k else '' }}" style="text-decoration: none;">
+                    {{ i18n.woundPills.get(k, k) }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Active Wound Guide Card (Rendered via Python & Jinja2) -->
+        <div class="wound-guide-card" id="wound-guide-card">
+            <div class="guide-header">
+                <div>
+                    <h3 class="guide-title">{{ active_protocol.title }}</h3>
+                    <span class="guide-status-badge {{ active_protocol.severityClass }}">{{ active_protocol.severity }}</span>
+                </div>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <div class="step-text">{{ active_protocol.step1 }}</div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <div class="step-text">{{ active_protocol.step2 }}</div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <div class="step-text">{{ active_protocol.step3 }}</div>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">4</div>
+                    <div class="step-text">{{ active_protocol.step4 }}</div>
+                </div>
+            </div>
+
+            <!-- Danger Don'ts -->
+            <div class="danger-donts-box">
+                <h4>🚫 {{ 'தவிர்க்க வேண்டிய ஆபத்தான செயல்கள் (DANGER DON\'TS):' if is_tamil else 'CRITICAL DANGER: What You Must NEVER Do:' }}</h4>
+                <ul>
+                    {% for d in active_protocol.donts %}
+                    <li>{{ d }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Transport Advisory -->
+            <div class="transport-box">
+                <span class="transport-icon">🚑</span>
+                <div>
+                    <strong>{{ 'மருத்துவமனை செல்லுதல்:' if is_tamil else 'Hospital / PHC Transport Advisory:' }}</strong>
+                    <p>{{ active_protocol.transport }}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

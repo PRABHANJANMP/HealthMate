@@ -1,0 +1,200 @@
+﻿<!-- templates/partials/daily_log_view.html -->
+<div id="view-chart" class="view-panel {{ 'active' if active_tab == 'chart' else '' }}">
+    <section class="chart-section">
+        <div class="section-hero-card">
+            <div class="section-hero-icon">📈</div>
+            <div>
+                <h2 id="chart-section-title">{{ i18n.chartSectionTitle }}</h2>
+                <p id="chart-section-desc">{{ i18n.chartSectionDesc }}</p>
+            </div>
+        </div>
+
+        {% if saved %}
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 600;">
+            ✓ {{ 'இன்றைய உடல்நலப் பதிவு வெற்றிகரமாக சேமிக்கப்பட்டது!' if is_tamil else 'Daily Health Check-in entry saved successfully!' }}
+        </div>
+        {% endif %}
+
+        <!-- Daily Health Check-in Form Card -->
+        <div class="log-form-card">
+            <div class="form-header-row">
+                <h3 id="log-form-title">{{ i18n.logFormTitle }}</h3>
+                <span class="form-badge">{{ 'தினசரி உடல்நலக் கண்காணிப்பு' if is_tamil else 'Tracks Daily Health' }}</span>
+            </div>
+
+            <form id="health-log-form" action="/daily-log" method="POST" class="log-form-grid">
+                <!-- Date & Time -->
+                <div class="form-group">
+                    <label for="log-date" id="lbl-date">{{ i18n.lblDate }}</label>
+                    <input type="date" name="date" id="log-date" required value="{{ now_date }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="log-time" id="lbl-time">{{ i18n.lblTime }}</label>
+                    <input type="time" name="time" id="log-time" required value="{{ now_time }}">
+                </div>
+
+                <!-- Blood Pressure -->
+                <div class="form-group">
+                    <label for="log-sys-bp" id="lbl-sys-bp">{{ i18n.lblSysBp }}</label>
+                    <input type="number" name="systolic_bp" id="log-sys-bp" placeholder="{{ i18n.phSysBp }}" min="60" max="250">
+                </div>
+
+                <div class="form-group">
+                    <label for="log-dia-bp" id="lbl-dia-bp">{{ i18n.lblDiaBp }}</label>
+                    <input type="number" name="diastolic_bp" id="log-dia-bp" placeholder="{{ i18n.phDiaBp }}" min="40" max="150">
+                </div>
+
+                <!-- Blood Sugar & Pulse -->
+                <div class="form-group">
+                    <label for="log-sugar" id="lbl-sugar">{{ i18n.lblSugar }}</label>
+                    <input type="number" name="blood_glucose" id="log-sugar" placeholder="{{ i18n.phSugar }}" min="40" max="600">
+                </div>
+
+                <div class="form-group">
+                    <label for="log-pulse" id="lbl-pulse">{{ i18n.lblPulse }}</label>
+                    <input type="number" name="heart_rate" id="log-pulse" placeholder="{{ i18n.phPulse }}" min="40" max="220">
+                </div>
+
+                <!-- SpO2 & Temperature -->
+                <div class="form-group">
+                    <label for="log-spo2" id="lbl-spo2">{{ i18n.lblSpo2 }}</label>
+                    <input type="number" name="spo2" id="log-spo2" placeholder="{{ i18n.phSpo2 }}" min="50" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="log-temp" id="lbl-temp">{{ i18n.lblTemp }}</label>
+                    <input type="number" step="0.1" name="temperature" id="log-temp" placeholder="{{ i18n.phTemp }}" min="90" max="108">
+                </div>
+
+                <!-- Pain Scale Slider -->
+                <div class="form-group full-width pain-slider-group">
+                    <div class="slider-header">
+                        <label for="log-pain" id="lbl-pain">{{ i18n.lblPain }}</label>
+                        <span id="pain-val-badge" class="pain-badge">{{ i18n.painBadges.0 }}</span>
+                    </div>
+                    <input type="range" name="pain_level" id="log-pain" min="0" max="10" value="0" class="pain-slider" oninput="updatePainDisplay(this.value, '{{ lang }}')">
+                </div>
+
+                <!-- Symptoms Multi-Select -->
+                <div class="form-group full-width">
+                    <label id="lbl-symptoms-select">{{ i18n.lblSymptomsSelect }}</label>
+                    <div class="symptom-tag-chips" id="symptom-tag-chips">
+                        {% for sym_key, sym_label in i18n.symptomsDict.items() %}
+                        <label class="symptom-tag" style="cursor: pointer;">
+                            <input type="checkbox" name="symptoms" value="{{ sym_key }}" style="display: none;" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                            <span>{{ sym_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Overall Condition Severity -->
+                <div class="form-group">
+                    <label for="log-severity" id="lbl-severity">{{ i18n.lblSeverity }}</label>
+                    <select name="condition_severity" id="log-severity" required>
+                        <option value="Mild">{{ i18n.severityOptions.Mild }}</option>
+                        <option value="Moderate">{{ i18n.severityOptions.Moderate }}</option>
+                        <option value="Severe">{{ i18n.severityOptions.Severe }}</option>
+                    </select>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="form-group">
+                    <label for="log-notes" id="lbl-notes">{{ i18n.lblNotes }}</label>
+                    <input type="text" name="notes" id="log-notes" placeholder="{{ i18n.phNotes }}">
+                </div>
+
+                <div class="form-actions full-width">
+                    <button type="submit" class="primary-btn" id="save-log-btn">{{ i18n.saveLogBtn }}</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Interactive Vitals Trend Charts -->
+        <div class="charts-card">
+            <div class="chart-tab-header">
+                <h3 id="charts-title">{{ i18n.chartsTitle }}</h3>
+                <div class="chart-switches">
+                    <button type="button" class="chart-switch-btn active" data-chart="bp" onclick="switchChartType('bp')">{{ i18n.chartSwitches.bp }}</button>
+                    <button type="button" class="chart-switch-btn" data-chart="sugar-temp" onclick="switchChartType('sugar-temp')">{{ i18n.chartSwitches.get('sugar-temp') }}</button>
+                    <button type="button" class="chart-switch-btn" data-chart="pulse-spo2" onclick="switchChartType('pulse-spo2')">{{ i18n.chartSwitches.get('pulse-spo2') }}</button>
+                </div>
+            </div>
+
+            <div class="chart-canvas-wrapper">
+                <canvas id="vitalsChart" height="260"></canvas>
+            </div>
+        </div>
+
+        <!-- Health Timeline Visual Display (Rendered Server-Side) -->
+        <div class="timeline-container">
+            <div class="timeline-header">
+                <h3 id="timeline-title">{{ i18n.timelineTitle }}</h3>
+                <form action="/chat/submit" method="POST" style="margin: 0;">
+                    <input type="hidden" name="session_id" value="{{ session_id }}">
+                    <input type="hidden" name="language" value="{{ lang }}">
+                    <input type="hidden" name="message" value="{{ 'எனது சமீபத்திய உடல்நல அளவீடுகளை பகுப்பாய்வு செய்து நிலைமை நல்லதா அல்லது மருத்துவரிடம் செல்ல வேண்டுமா என கூறுங்கள்: ' if is_tamil else 'Please analyze my recent health vitals and tell me if my condition is stable or needs medical review: ' }}{% for r in vitals_logs[:3] %}[{{ r.date }}: BP {{ r.systolic_bp or 'N/A' }}/{{ r.diastolic_bp or 'N/A' }}, Sugar {{ r.blood_glucose or 'N/A' }}, Temp {{ r.temperature or 'N/A' }}°F]. {% endfor %}">
+                    <button type="submit" id="analyze-chart-btn" class="ai-analyze-btn">
+                        {{ i18n.analyzeChartBtn }}
+                    </button>
+                </form>
+            </div>
+
+            <div id="timeline-cards-list" class="timeline-cards-list">
+                {% for entry in vitals_logs %}
+                <div class="timeline-card">
+                    <div class="timeline-card-header">
+                        <div>
+                            <span class="timeline-date">📅 {{ entry.date }} • {{ entry.time }}</span>
+                            <span class="timeline-severity severity-{{ entry.condition_severity | lower }}">{{ entry.condition_severity }}</span>
+                        </div>
+                        <form action="/daily-log/delete/{{ entry.id }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ 'இந்த பதிவை நீக்க விரும்புகிறீர்களா?' if is_tamil else 'Delete this log entry?' }}');">
+                            <button type="submit" class="timeline-del-btn" title="{{ i18n.deleteEntryText }}">🗑️</button>
+                        </form>
+                    </div>
+
+                    <div class="timeline-vitals-row">
+                        {% if entry.systolic_bp and entry.diastolic_bp %}
+                        <div class="vital-pill"><span class="vital-icon">💓</span><strong>BP:</strong> {{ entry.systolic_bp }}/{{ entry.diastolic_bp }} mmHg</div>
+                        {% endif %}
+                        {% if entry.blood_glucose %}
+                        <div class="vital-pill"><span class="vital-icon">🩸</span><strong>{{ 'சர்க்கரை' if is_tamil else 'Sugar' }}:</strong> {{ entry.blood_glucose }} mg/dL</div>
+                        {% endif %}
+                        {% if entry.spo2 %}
+                        <div class="vital-pill"><span class="vital-icon">🫁</span><strong>SpO2:</strong> {{ entry.spo2 }}%</div>
+                        {% endif %}
+                        {% if entry.heart_rate %}
+                        <div class="vital-pill"><span class="vital-icon">❤️</span><strong>Pulse:</strong> {{ entry.heart_rate }} BPM</div>
+                        {% endif %}
+                        {% if entry.temperature %}
+                        <div class="vital-pill"><span class="vital-icon">🌡️</span><strong>Temp:</strong> {{ entry.temperature }}°F</div>
+                        {% endif %}
+                        {% if entry.pain_level %}
+                        <div class="vital-pill"><span class="vital-icon">😣</span><strong>{{ 'வலி' if is_tamil else 'Pain' }}:</strong> {{ entry.pain_level }}/10</div>
+                        {% endif %}
+                    </div>
+
+                    {% if entry.symptoms %}
+                    <div class="timeline-symptoms">
+                        {% for sym in entry.symptoms %}
+                        <span class="symptom-bubble">{{ i18n.symptomsDict.get(sym, sym) }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if entry.notes %}
+                    <div class="timeline-notes">
+                        <strong>{{ 'குறிப்பு:' if is_tamil else 'Notes:' }}</strong> {{ entry.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div style="padding: 24px; text-align: center; color: var(--muted);">
+                    {{ 'பதிவுகள் எதுவும் இல்லை.' if is_tamil else 'No health logs recorded yet.' }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>

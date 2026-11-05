@@ -1,0 +1,179 @@
+﻿<!-- templates/partials/doctor_report_view.html -->
+<div id="view-report" class="view-panel {{ 'active' if active_tab == 'report' else '' }}">
+    <section class="report-section">
+        <div class="section-hero-card">
+            <div class="section-hero-icon">📄</div>
+            <div>
+                <h2 id="report-title">{{ i18n.reportTitle }}</h2>
+                <p id="report-desc">{{ i18n.reportDesc }}</p>
+            </div>
+        </div>
+
+        <!-- Patient Info & Generation Bar -->
+        <div class="report-controls-card">
+            <form action="/doctor-report/generate" method="POST">
+                <input type="hidden" name="language" value="{{ lang }}">
+                <div class="patient-inputs-grid">
+                    <div class="form-group">
+                        <label for="patient-name-input" id="lbl-pat-name">{{ i18n.lblPatName }}</label>
+                        <input type="text" name="patient_name" id="patient-name-input" placeholder="{{ i18n.phPatName }}" value="{{ p_name or ('செல்வி' if is_tamil else 'Ramesh Kumar') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-age-input" id="lbl-pat-age">{{ i18n.lblPatAge }}</label>
+                        <input type="text" name="patient_age" id="patient-age-input" placeholder="{{ i18n.phPatAge }}" value="{{ p_age or ('48 வயது / பெண்' if is_tamil else '48 Y / Male') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="doctor-email-input" id="lbl-doc-email">{{ i18n.lblDocEmail }}</label>
+                        <input type="email" name="doctor_email" id="doctor-email-input" placeholder="doctor@clinic.com" value="{{ d_email or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="doctor-phone-input" id="lbl-doc-phone">{{ i18n.lblDocPhone }}</label>
+                        <input type="tel" name="doctor_phone" id="doctor-phone-input" placeholder="{{ i18n.phDocPhone }}" value="{{ d_phone or '' }}">
+                    </div>
+                </div>
+
+                <div class="report-gen-actions">
+                    <button type="submit" id="generate-report-btn" class="primary-btn pulse-glow">
+                        {{ i18n.generateReportBtn }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Clinical Document Sheet (Hospital Grade) -->
+        <div class="report-document" id="report-document">
+            {% if not report_data %}
+            <div class="report-placeholder" id="report-placeholder">
+                <span class="report-empty-icon">📊</span>
+                <p id="report-empty-text">{{ i18n.reportEmptyText }}</p>
+            </div>
+            {% else %}
+            <!-- Rendered Report Content -->
+            <div id="report-content" class="report-content">
+                <!-- Header with Clinic Seal -->
+                <div class="doc-header">
+                    <div class="doc-header-brand">
+                        <span class="doc-cross">✚</span>
+                        <div>
+                            <h2 id="doc-title">{{ i18n.docTitle }}</h2>
+                            <p id="doc-subtitle">{{ i18n.docSubtitle }}</p>
+                        </div>
+                    </div>
+                    <div class="doc-meta-right">
+                        <div class="doc-badge" id="doc-badge">{{ i18n.docBadge }}</div>
+                        <div id="doc-generated-date" class="doc-date">Generated: {{ report_data.generated_at }}</div>
+                    </div>
+                </div>
+
+                <hr class="doc-divider">
+
+                <!-- Patient Details Row -->
+                <div class="doc-patient-meta">
+                    <div><strong id="doc-lbl-name">{{ i18n.docLblName }}</strong> <span id="doc-patient-name">{{ report_data.patient_name }}</span></div>
+                    <div><strong id="doc-lbl-demo">{{ i18n.docLblDemo }}</strong> <span id="doc-patient-demographics">{{ report_data.patient_age }}</span></div>
+                    <div><strong id="doc-lbl-loc">{{ i18n.docLblLoc }}</strong> <span id="doc-location-val">{{ i18n.docLocVal }}</span></div>
+                    <div><strong id="doc-lbl-win">{{ i18n.docLblWin }}</strong> <span id="doc-window-val">{{ i18n.docWinVal }}</span></div>
+                </div>
+
+                <!-- Executive Vitals Statistics Table -->
+                <div class="doc-section">
+                    <h4 class="doc-section-title" id="doc-sec1-title">{{ i18n.docSec1Title }}</h4>
+                    <div class="doc-stats-grid" id="doc-stats-grid">
+                        <div class="doc-stat-box">
+                            <span class="stat-num">{{ report_data.stats.avg_systolic_bp or '--' }}/{{ report_data.stats.avg_diastolic_bp or '--' }}</span>
+                            <span class="stat-label">{{ i18n.statAvgBp }}</span>
+                            {% if report_data.stats.max_bp %}<span class="stat-sub">{{ i18n.statPeakBp }}: {{ report_data.stats.max_bp }}</span>{% endif %}
+                        </div>
+                        <div class="doc-stat-box">
+                            <span class="stat-num">{{ report_data.stats.avg_blood_glucose or '--' }}</span>
+                            <span class="stat-label">{{ i18n.statAvgSugar }}</span>
+                            {% if report_data.stats.max_glucose %}<span class="stat-sub">{{ i18n.statPeakSugar }}: {{ report_data.stats.max_glucose }}</span>{% endif %}
+                        </div>
+                        <div class="doc-stat-box">
+                            <span class="stat-num">{{ report_data.stats.avg_spo2 or '--' }}%</span>
+                            <span class="stat-label">{{ i18n.statAvgSpo2 }}</span>
+                            {% if report_data.stats.min_spo2 %}<span class="stat-sub">{{ i18n.statLowest }}: {{ report_data.stats.min_spo2 }}%</span>{% endif %}
+                        </div>
+                        <div class="doc-stat-box">
+                            <span class="stat-num">{{ report_data.stats.avg_pulse or '--' }}</span>
+                            <span class="stat-label">{{ i18n.statAvgPulse }}</span>
+                        </div>
+                        <div class="doc-stat-box">
+                            <span class="stat-num">{{ report_data.stats.avg_temp or '--' }}°F</span>
+                            <span class="stat-label">{{ i18n.statAvgTemp }}</span>
+                        </div>
+                        <div class="doc-stat-box">
+                            <span class="stat-num">{{ report_data.stats.total_days_logged }}</span>
+                            <span class="stat-label">{{ i18n.statDaysMonitored }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Red Flag Alerts Box -->
+                <div class="doc-section" id="doc-red-flags-section">
+                    <h4 class="doc-section-title" id="doc-sec2-title">{{ i18n.docSec2Title }}</h4>
+                    <div class="doc-alerts-box" id="doc-alerts-box">
+                        {% if report_data.red_flags %}
+                            {% for rf in report_data.red_flags %}
+                            <div class="doc-alert-item">⚠️ {{ rf }}</div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="font-size: 0.85rem; color: #166534;">🟢 {{ 'இந்த காலகட்டத்தில் அவசர எச்சரிக்கைகள் எதுவும் பதிவாகவில்லை.' if is_tamil else 'No acute threshold abnormalities logged in this period.' }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Symptoms Timeline Breakdown -->
+                <div class="doc-section">
+                    <h4 class="doc-section-title" id="doc-sec3-title">{{ i18n.docSec3Title }}</h4>
+                    <div class="doc-symptoms-list" id="doc-symptoms-list">
+                        {% if report_data.stats.symptom_frequencies %}
+                            {% for sym, cnt in report_data.stats.symptom_frequencies.items() %}
+                            <span class="doc-symptom-pill">{{ i18n.symptomsDict.get(sym, sym) }}: <strong>{{ cnt }} {{ 'நாட்கள்' if is_tamil else 'days' }}</strong></span>
+                            {% endfor %}
+                        {% else %}
+                            <span style="font-size: 0.85rem; color: var(--muted);">{{ 'தொடர் அறிகுறிகள் எதுவும் பதிவாகவில்லை.' if is_tamil else 'No persistent symptoms logged.' }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- AI Clinical Summary & Attending Physician Memo -->
+                <div class="doc-section">
+                    <h4 class="doc-section-title" id="doc-sec4-title">{{ i18n.docSec4Title }}</h4>
+                    <div class="doc-ai-summary" id="doc-ai-summary" style="white-space: pre-line;">{{ report_data.clinical_summary }}</div>
+                </div>
+
+                <!-- Real Doctor Signature & Prescription Box -->
+                <div class="doc-section doc-prescription-box">
+                    <h4 class="doc-section-title" id="doc-sec5-title">{{ i18n.docSec5Title }}</h4>
+                    <div class="doc-blank-prescription">
+                        <div class="doc-rx-line" id="doc-rx-line"><strong>{{ i18n.docRxLine.split(':')[0] }}:</strong> {{ i18n.docRxLine.split(':')[1] }}</div>
+                        <div class="doc-lab-line" id="doc-lab-line"><strong>{{ i18n.docLabLine.split(':')[0] }}:</strong> {{ i18n.docLabLine.split(':')[1] }}</div>
+                        <div class="doc-sign-row">
+                            <div id="doc-date-line"><strong>{{ i18n.docDateLine.split(':')[0] }}:</strong> {{ i18n.docDateLine.split(':')[1] }}</div>
+                            <div id="doc-sign-line"><strong>{{ i18n.docSignLine.split(':')[0] }}:</strong> {{ i18n.docSignLine.split(':')[1] }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doc-disclaimer" id="doc-disclaimer">
+                    {{ i18n.docDisclaimer }}
+                </div>
+
+                <!-- Sharing Actions Toolbar -->
+                <div class="doc-sharing-toolbar">
+                    <a id="email-doctor-btn" href="{{ report_data.email_link }}" class="share-btn email-share">
+                        <span>{{ i18n.emailDoctorBtn }}</span>
+                    </a>
+                    <a id="whatsapp-doctor-btn" href="{{ report_data.whatsapp_link }}" target="_blank" rel="noopener" class="share-btn whatsapp-share">
+                        <span>{{ i18n.whatsappDoctorBtn }}</span>
+                    </a>
+                    <button type="button" id="print-report-btn" class="share-btn print-share" onclick="window.print()">
+                        <span>{{ i18n.printReportBtn }}</span>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>

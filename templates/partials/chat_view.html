@@ -1,0 +1,101 @@
+﻿<!-- templates/partials/chat_view.html -->
+<div id="view-chat" class="view-panel {{ 'active' if active_tab == 'chat' else '' }}">
+    <section class="hero-card">
+        <div class="hero-header">
+            <div class="hero-chip" id="hackathon-tag">{{ i18n.hackathonTag }}</div>
+            <h2 id="hero-title">{{ i18n.heroTitle }}</h2>
+            <p id="hero-subtitle">
+                {{ i18n.heroSubtitle }}
+            </p>
+        </div>
+
+        <!-- Suggestion Chips -->
+        <div class="suggestions-wrapper">
+            <span class="suggestion-label" id="suggest-label">{{ i18n.suggestLabel }}</span>
+            <div class="chips-container" id="chips-container">
+                {% for sug in i18n.suggestions %}
+                <button type="button" class="chip-btn" onclick="fillAndSendChat(this.innerText)">{{ sug }}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Window -->
+    <section class="chat-wrapper">
+        <div class="chat-header">
+            <div class="chat-meta">
+                <span class="meta-title" id="chat-title">{{ i18n.chatTitle }}</span>
+                <span class="meta-note" id="chat-subtitle">{{ i18n.chatSubtitle }}</span>
+            </div>
+            <button class="voice-toggle-btn" id="voice-btn" type="button" title="{{ 'Click to speak' if not is_tamil else 'பேச கிளிக் செய்க' }}">
+                <span class="mic-icon">🎙️</span>
+                <span class="voice-label" id="voice-label">{{ i18n.voiceLabel }}</span>
+            </button>
+        </div>
+
+        <!-- Messages Scroll Area -->
+        <div class="chat-history" id="chat-messages" role="log" aria-live="polite">
+            <!-- Initial Welcome Bot Message -->
+            <div class="message-row bot-row">
+                <div class="avatar bot-avatar">✚</div>
+                <div class="bubble bot-bubble">
+                    <div class="bubble-content" id="welcome-message">
+                        {{ i18n.welcomeHtml | safe }}
+                    </div>
+                    <div class="bubble-footer">
+                        <span class="time-stamp">HealthMate AI</span>
+                        <span class="verified-tag">✓ {{ 'மருத்துவ பாதுகாப்பு நெறிமுறை' if is_tamil else 'Medical Safety Guardrails Active' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Server-Side Rendered Chat History -->
+            {% for msg in chat_history %}
+            <div class="message-row {{ 'user-row' if msg.role == 'user' else 'bot-row' }}">
+                <div class="avatar {{ 'user-avatar' if msg.role == 'user' else 'bot-avatar' }}">
+                    {{ '👤' if msg.role == 'user' else '✚' }}
+                </div>
+                <div class="bubble {{ 'user-bubble' if msg.role == 'user' else 'bot-bubble' }}">
+                    <div class="bubble-content">
+                        {{ msg.text | safe }}
+                    </div>
+                    <div class="bubble-footer">
+                        <span class="time-stamp">{{ 'நீங்கள்' if (msg.role == 'user' and is_tamil) else ('You' if msg.role == 'user' else 'HealthMate AI') }}</span>
+                        {% if msg.role != 'user' %}
+                        <span class="verified-tag">✓ {{ 'மருத்துவ வழிகாட்டுதல்' if is_tamil else 'Medical Safety Guardrails' }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Input Field Form -->
+        <form id="chat-form" action="/chat/submit" method="POST" class="chat-input-bar">
+            <input type="hidden" name="session_id" value="{{ session_id }}">
+            <input type="hidden" name="language" value="{{ lang }}">
+            <div class="input-container">
+                <textarea 
+                    name="message"
+                    id="user-input" 
+                    rows="1" 
+                    placeholder="{{ i18n.chatPlaceholder }}" 
+                    required
+                    aria-label="Health question"
+                ></textarea>
+            </div>
+
+            <button type="submit" id="send-button" class="send-btn" title="{{ i18n.sendText }}">
+                <span>{{ i18n.sendText }}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </form>
+
+        <div class="input-caveat">
+            <span id="privacy-note">{{ i18n.privacyNote }}</span>
+        </div>
+    </section>
+</div>
